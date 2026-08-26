@@ -1,7 +1,7 @@
 {
-  "name": "sigil-root",
+  "name": "escutcheon-root",
   "private": true,
-  "description": "Monorepo root for sigil.",
+  "description": "Monorepo root for escutcheon.",
   "license": "Apache-2.0",
   "type": "module",
   "workspaces": [
