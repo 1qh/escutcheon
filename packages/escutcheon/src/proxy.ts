@@ -63,6 +63,12 @@ const bytesToB64 = (bytes: Uint8Array): string => {
     binary += String.fromCodePoint(...bytes.subarray(index, index + chunk))
   return btoa(binary)
 }
+const bytesFromB64 = (b64: string): Uint8Array => {
+  const binary = atob(b64)
+  const out = new Uint8Array(binary.length)
+  for (let index = 0; index < binary.length; index += 1) out[index] = binary.codePointAt(index) ?? 0
+  return out
+}
 const handleProxy = async (request: ProxyRequest, config: ProxyConfig): Promise<ProxyReply> => {
   if (!config.allow(request.path, request.method)) return { error: 'path not allowed', ok: false, status: 0 }
   const headers: Record<string, string> = {}
@@ -91,6 +97,8 @@ const handleProxy = async (request: ProxyRequest, config: ProxyConfig): Promise<
 export type { BridgeMessage, Launch, PingReply, ProxyConfig, ProxyMethod, ProxyReply, ProxyRequest, StashReply, Transport }
 export {
   bridgeMessageSchema,
+  bytesFromB64,
+  bytesToB64,
   getLaunchSchema,
   handleProxy,
   launchSchema,
