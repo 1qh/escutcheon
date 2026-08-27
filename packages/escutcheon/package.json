@@ -1,6 +1,6 @@
 {
   "name": "escutcheon",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Launch a tool from a host app into a separate origin, borrowing the signed-in user's session: a signed cross-origin launch token plus a postMessage proxy for the host's own API, so the tool holds no server-side credential.",
   "repository": {
     "type": "git",

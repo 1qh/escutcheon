@@ -63,7 +63,7 @@ const bytesToB64 = (bytes: Uint8Array): string => {
     binary += String.fromCodePoint(...bytes.subarray(index, index + chunk))
   return btoa(binary)
 }
-const bytesFromB64 = (b64: string): Uint8Array => {
+const bytesFromB64 = (b64: string): Uint8Array<ArrayBuffer> => {
   const binary = atob(b64)
   const out = new Uint8Array(binary.length)
   for (let index = 0; index < binary.length; index += 1) out[index] = binary.codePointAt(index) ?? 0
