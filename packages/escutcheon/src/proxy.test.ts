@@ -71,6 +71,39 @@ test('a binary request returns base64 rather than json', async () => {
   expect(reply.ok).toBe(true)
   expect(reply.b64).toBe(btoa(String.fromCodePoint(1, 2, 3)))
 })
+test('the tool token authenticates when present; the host authorize hook fills in when the tool has none', async () => {
+  let toolHeld = ''
+  await withFetch(
+    async (_url, init) => {
+      toolHeld = new Headers(init?.headers).get('authorization') ?? ''
+      return new Response('{}', { status: 200 })
+    },
+    async () =>
+      handleProxy(
+        { method: 'GET', path: '/v1/chunk/list', token: 'Bearer tool' },
+        config({ authorize: () => 'Bearer host' })
+      )
+  )
+  expect(toolHeld).toBe('Bearer tool')
+  let hostInjected = ''
+  await withFetch(
+    async (_url, init) => {
+      hostInjected = new Headers(init?.headers).get('authorization') ?? ''
+      return new Response('{}', { status: 200 })
+    },
+    async () => handleProxy({ method: 'GET', path: '/v1/chunk/list' }, config({ authorize: () => 'Bearer host' }))
+  )
+  expect(hostInjected).toBe('Bearer host')
+  let none: null | string = null
+  await withFetch(
+    async (_url, init) => {
+      none = new Headers(init?.headers).get('authorization')
+      return new Response('{}', { status: 200 })
+    },
+    async () => handleProxy({ method: 'GET', path: '/v1/chunk/list' }, config())
+  )
+  expect(none).toBeNull()
+})
 test('a failed fetch is reported as a clean reply, never thrown', async () => {
   const reply = await withFetch(
     async () => {

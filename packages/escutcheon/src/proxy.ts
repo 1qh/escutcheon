@@ -10,7 +10,9 @@ import { z } from 'zod'
  * "we can't misuse what we never hold".
  *
  * `handleProxy` is framework-free: the path allowlist is a predicate the caller supplies (so only the
- * endpoints the tool needs are reachable), and the API origin is a parameter. The message schemas below
+ * endpoints the tool needs are reachable), and the API origin is a parameter. When the tool holds the
+ * session token it sends it as `token`; when the HOST holds a non-cookie credential the tool never sees
+ * (a bearer read from the host's own storage), the host supplies `authorize` to inject it. The schemas below
  * are the wire contract between the tool and the host — a proxied call, the launch stash/retrieve
  * handshake, and a ping. */
 const methodSchema = z.enum(['GET', 'POST'])
@@ -47,6 +49,7 @@ type PingReply = z.infer<typeof pingReplySchema>
 interface ProxyConfig {
   allow: (path: string, method: ProxyMethod) => boolean
   apiOrigin: string
+  authorize?: () => string | undefined
 }
 type ProxyMethod = z.infer<typeof methodSchema>
 type ProxyReply = z.infer<typeof proxyReplySchema>
@@ -63,7 +66,8 @@ const bytesToB64 = (bytes: Uint8Array): string => {
 const handleProxy = async (request: ProxyRequest, config: ProxyConfig): Promise<ProxyReply> => {
   if (!config.allow(request.path, request.method)) return { error: 'path not allowed', ok: false, status: 0 }
   const headers: Record<string, string> = {}
-  if (request.token) headers.authorization = request.token
+  const auth = request.token ?? config.authorize?.()
+  if (auth) headers.authorization = auth
   const init: RequestInit = { credentials: 'include', headers, method: request.method }
   if (request.method === 'POST') {
     headers['content-type'] = 'application/json'
