@@ -32,7 +32,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown"
+    "build": "tsdown",
+    "prepublishOnly": "bun run build",
+    "postpublish": "bun ../../tools/prune-versions.ts"
   },
   "dependencies": {
     "zod": "latest"
